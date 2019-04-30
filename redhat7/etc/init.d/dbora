@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+### BEGIN INIT INFO
+# Provides:          dbora
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Should-Start:      $named
+# Should-Stop:       $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Oracle DB
+# Description:       Oracle DB
+### END INIT INFO
+
+# define where oracle is
+export ORACLE_HOME=/opt/oracle/product/12.2.0.1
+
+if [ ! -d "$ORACLE_HOME" ]; then
+  echo ORACLE_HOME does not exist as a valid directory : $ORACLE_HOME
+  exit 1
+fi
+
+
+# define oracle instance
+export ORACLE_SID=orades01
+
+
+# include oracle binaries on path
+ORACLE_PATH=$ORACLE_HOME/bin
+if [ -z "`echo $PATH | grep $ORACLE_PATH`" ]; then
+  export PATH=$PATH:$ORACLE_PATH
+fi
+
+#$ORACLE_HOME/bin/sqlplus / as sysdba;
+#startup;
+ 
+ORACLE_USER=oracle
+
+case "$1" in
+    start)
+		echo -n "Starting Listener: "
+		$ORACLE_HOME/bin/lsnrctl start
+		echo -n "Starting Oracle: "
+		/sbin/runuser $ORACLE_USER -s /bin/bash -c "$ORACLE_HOME/bin/dbstart $ORACLE_HOME"
+		
+        ;;
+    stop)
+		echo -n "Stopping Listener: "
+		$ORACLE_HOME/bin/lsnrctl stop
+		echo -n "Stopping Oracle: "
+		/sbin/runuser $ORACLE_USER -s /bin/bash -c "$ORACLE_HOME/bin/dbshut $ORACLE_HOME"
+        ;;
+    *)
+        echo "usage: $0 {start|stop}"
+        exit
+        ;;
+esac
+#
+exit
