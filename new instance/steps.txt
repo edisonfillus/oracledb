@@ -1,0 +1,69 @@
+# login as oracle
+su oracle
+
+# Define environment variables
+export ORACLE_HOME=/opt/oracle/product/12.2.0.1
+export ORACLE_BASE=/opt/oracle
+export ORACLE_SID=orades02        # Here define the instance name
+export PATH=$PATH:$ORACLE_HOME/bin
+
+# Copy initialization file in the format init{SID}.ora
+cd $ORACLE_HOME/dbs
+cp initorades01.ora initorades02.ora
+
+# on init{SID}.ora, define name and paths
+db_name='orades02'
+audit_file_dest='/opt/oracle/admin/orades02/adump
+dispatchers='(PROTOCOL=TCP) (SERVICE=orades02XDB)'
+control_files = ('/ora/orades02/control01.ctl','/ora/orades02/control02.ctl')
+
+
+# Create dirs and grant permissions
+mkdir -p $ORACLE_BASE/admin/orades02/adump
+chmod u+rw $ORACLE_BASE/admin/orades02/adump
+mkdir -p /ora/orades02
+chmod u+rw /ora/orades02
+
+
+# Log on SQL PLUS and run commands, change paths on CREATE DATABASE
+
+sqlplus / as sysdba
+
+SQL> CREATE SPFILE FROM PFILE;
+
+SQL> STARTUP NOMOUNT;
+
+SQL> CREATE DATABASE orades02
+     USER SYS IDENTIFIED BY Password
+     USER SYSTEM IDENTIFIED BY Password
+     LOGFILE GROUP 1 ('/ora/orades02/redo01.log') SIZE 200M,
+             GROUP 2 ('/ora/orades02/redo02.log') SIZE 200M,
+	     GROUP 3 ('/ora/orades02/redo03.log') SIZE 200M
+     MAXLOGFILES 5
+     MAXLOGHISTORY 10
+     MAXDATAFILES 50
+     CHARACTER SET US7ASCII
+     NATIONAL CHARACTER SET AL16UTF16
+     DATAFILE '/ora/orades02/system01.dbf' SIZE 128M AUTOEXTEND ON NEXT 128M MAXSIZE 1024M
+     SYSAUX DATAFILE '/ora/orades02/sysaux01.dbf' SIZE 200M REUSE
+     DEFAULT TABLESPACE USERS
+       DATAFILE '/ora/orades02/users01.dbf'
+       SIZE 50M REUSE AUTOEXTEND ON MAXSIZE UNLIMITED
+     DEFAULT TEMPORARY TABLESPACE TEMPTS
+       TEMPFILE '/ora/orades02/tempts01.dbf'
+       SIZE 30M REUSE
+     UNDO TABLESPACE UNDOTS
+       DATAFILE '/ora/orades02/undots01.dbf'
+       SIZE 100M REUSE AUTOEXTEND ON MAXSIZE UNLIMITED;
+
+SQL> @?/rdbms/admin/catalog.sql;
+
+SQL> @?/rdbms/admin/catproc.sql;
+
+SQL> SHUTDOWN IMMEDIATE;
+
+SQL> STARTUP;
+
+# Open /etc/oratab and insert the new instance to autostart
+nano /etc/oratab
+orades02:/opt/oracle/product/12.2.0.1:Y
