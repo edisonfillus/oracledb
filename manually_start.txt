@@ -1,0 +1,9 @@
+export ORACLE_HOME=/opt/oracle/product/12.2.0.1
+export ORACLE_SID=orades01
+
+$ORACLE_HOME/bin/dbstart $ORACLE_HOME
+
+$ORACLE_HOME/bin/sqlplus / as sysdba;
+
+startup;
+sudo $ORACLE_HOME/bin/lsnrctl start 
