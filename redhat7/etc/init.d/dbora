@@ -37,16 +37,9 @@ ORACLE_USER=oracle
 
 case "$1" in
     start)
-		echo -n "Starting Listener: "
-		$ORACLE_HOME/bin/lsnrctl start
-		echo -n "Starting Oracle: "
 		/sbin/runuser $ORACLE_USER -s /bin/bash -c "$ORACLE_HOME/bin/dbstart $ORACLE_HOME"
-		
         ;;
     stop)
-		echo -n "Stopping Listener: "
-		$ORACLE_HOME/bin/lsnrctl stop
-		echo -n "Stopping Oracle: "
 		/sbin/runuser $ORACLE_USER -s /bin/bash -c "$ORACLE_HOME/bin/dbshut $ORACLE_HOME"
         ;;
     *)
